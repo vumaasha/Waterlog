@@ -43,7 +43,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         buildGoogleApiClient();
-        Toast.makeText(this, "Tap a street to record water logging info",Toast.LENGTH_LONG).show();
     }
 
 
@@ -99,6 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // in rare cases when a location is not available.
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
+            Toast.makeText(this, "Tap a street to record water logging info",Toast.LENGTH_LONG).show();
             double longitude = mLastLocation.getLongitude();
             double latitude = mLastLocation.getLatitude();
             LatLng currentLocation = new LatLng(latitude, longitude);
