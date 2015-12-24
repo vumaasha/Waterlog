@@ -15,7 +15,9 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -35,7 +37,7 @@ import java.util.Locale;
 /**
  * Created by venki on 12/13/15.
  */
-public class WaterLoggingFragment extends Fragment{
+public class WaterLoggingFragment extends Fragment {
 
     private static final String TAG = "WaterLoggingFragment";
 
@@ -54,23 +56,36 @@ public class WaterLoggingFragment extends Fragment{
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
                 WaterLoggingLevel level = WaterLoggingLevel.NONE;
-                switch (checkedId){
+                float markerColor = BitmapDescriptorFactory.HUE_GREEN;
+                String title = getString(R.string.logging_level_none);
+                switch (checkedId) {
                     case (R.id.no_water_logging):
                         level = WaterLoggingLevel.NONE;
                         break;
                     case (R.id.feet_1_3):
                         level = WaterLoggingLevel.FEET_1_3;
+                        markerColor = BitmapDescriptorFactory.HUE_YELLOW;
+                        title = getString(R.string.logging_level_low);
                         break;
                     case (R.id.feet_3_6):
                         level = WaterLoggingLevel.FEET_3_6;
+                        markerColor = BitmapDescriptorFactory.HUE_ORANGE;
+                        title = getString(R.string.logging_level_medium);
                         break;
                     case (R.id.feet_above_6):
                         level = WaterLoggingLevel.ABOVE_6;
+                        markerColor = BitmapDescriptorFactory.HUE_RED;
+                        title = getString(R.string.logging_level_high);
                         break;
                 }
                 String android_id = Secure.getString(getActivity().getContentResolver(),
                         Secure.ANDROID_ID);
-                saveLog(android_id,location.latitude,location.longitude,level);
+                if (location != null) {
+                    saveLog(android_id, location.latitude, location.longitude, level);
+                    MarkerOptions markerOptions = new MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.defaultMarker(markerColor));
+                    MapsActivity mapsActivity = (MapsActivity) getActivity();
+                    mapsActivity.addMarker(markerOptions);
+                }
                 getFragmentManager().beginTransaction().remove(WaterLoggingFragment.this).commit();
 
                 Toast.makeText(WaterLoggingFragment.this.getActivity(), "Thanks for your time.", Toast.LENGTH_LONG).show();
@@ -80,22 +95,22 @@ public class WaterLoggingFragment extends Fragment{
     }
 
     public enum WaterLoggingLevel {
-        NONE(0),FEET_1_3(3),FEET_3_6(6),ABOVE_6(10);
+        NONE(0), FEET_1_3(3), FEET_3_6(6), ABOVE_6(10);
 
         private final int level;
 
-        private WaterLoggingLevel(int level){
+        WaterLoggingLevel(int level) {
             this.level = level;
         }
 
-        public Integer getLevel(){
+        public Integer getLevel() {
             return this.level;
         }
     }
 
 
-    private void saveLog(String ANDROID_ID,Double latitude,Double longitude,WaterLoggingLevel level){
-       WaterLoggingInfo log = new WaterLoggingInfo(ANDROID_ID,latitude,longitude,level);
+    private void saveLog(String ANDROID_ID, Double latitude, Double longitude, WaterLoggingLevel level) {
+        WaterLoggingInfo log = new WaterLoggingInfo(ANDROID_ID, latitude, longitude, level);
         new PostWaterLoggingInfo().execute(log);
 
     }

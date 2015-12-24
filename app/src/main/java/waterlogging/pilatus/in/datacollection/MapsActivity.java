@@ -98,17 +98,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // in rare cases when a location is not available.
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
-            Toast.makeText(this, "Tap a street to record water logging info",Toast.LENGTH_LONG).show();
             double longitude = mLastLocation.getLongitude();
             double latitude = mLastLocation.getLatitude();
             LatLng currentLocation = new LatLng(latitude, longitude);
-            MarkerOptions markerOptions = new MarkerOptions().position(currentLocation).title("Your Current Location");
-            Marker marker = mMap.addMarker(markerOptions);
-            marker.showInfoWindow();
+            Toast.makeText(this, "Tap a street to record water logging info",Toast.LENGTH_LONG).show();
+            Log.i(TAG,"Max zoom level is: "+ mMap.getMaxZoomLevel());
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(currentLocation, mMap.getMaxZoomLevel() - 3);
             mMap.moveCamera(update);
         } else {
             Toast.makeText(this, R.string.no_location_detected, Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -161,5 +160,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapLongClick(LatLng latLng) {
         Toast.makeText(this, "pressed, point=" + latLng, Toast.LENGTH_LONG).show();
 
+    }
+
+    public void addMarker(MarkerOptions markerOptions){
+        Marker marker = mMap.addMarker(markerOptions);
+        marker.showInfoWindow();
     }
 }
