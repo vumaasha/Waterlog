@@ -3,7 +3,6 @@ package waterlogging.pilatus.in.datacollection;
 import android.app.Fragment;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.support.annotation.Nullable;
@@ -19,18 +18,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -45,10 +33,16 @@ public class WaterLoggingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final LatLng location = getArguments().getParcelable("latLng");
-        String area = getAreaName(location);
+        final Address address= getAddress(location);
+        String displayName = null;
+        if (address != null ){
+            displayName = getDisplayName(address);
+        } else {
+            displayName = location.toString();
+        }
         View view = inflater.inflate(R.layout.fragment_waterlogging_level, container, false);
         TextView streetNameView = (TextView) view.findViewById(R.id.street_name);
-        streetNameView.setText(area);
+        streetNameView.setText(displayName);
 
         RadioGroup waterLevelGroup = (RadioGroup) view.findViewById(R.id.waterlogging_group);
         waterLevelGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -81,7 +75,7 @@ public class WaterLoggingFragment extends Fragment {
                 String android_id = Secure.getString(getActivity().getContentResolver(),
                         Secure.ANDROID_ID);
                 if (location != null) {
-                    saveLog(android_id, location.latitude, location.longitude, level);
+                    saveLog(android_id, location.latitude, location.longitude, level,address);
                     MarkerOptions markerOptions = new MarkerOptions().position(location).title(title).icon(BitmapDescriptorFactory.defaultMarker(markerColor));
                     MapsActivity mapsActivity = (MapsActivity) getActivity();
                     mapsActivity.addMarker(markerOptions);
@@ -109,32 +103,38 @@ public class WaterLoggingFragment extends Fragment {
     }
 
 
-    private void saveLog(String ANDROID_ID, Double latitude, Double longitude, WaterLoggingLevel level) {
-        WaterLoggingInfo log = new WaterLoggingInfo(ANDROID_ID, latitude, longitude, level);
+    private void saveLog(String ANDROID_ID, Double latitude, Double longitude, WaterLoggingLevel level,Address address) {
+        WaterLoggingInfo log;
+        log = new WaterLoggingInfo(ANDROID_ID, latitude, longitude, level,address);
         new PostWaterLoggingInfo().execute(log);
+    }
 
+    private Address getAddress(LatLng latLng) {
+        Geocoder geocoder = new Geocoder(this.getActivity(), Locale.getDefault());
+        List<Address> fromLocation = null;
+        try {
+            fromLocation = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+        } catch (IOException e) {
+            Toast.makeText(WaterLoggingFragment.this.getActivity(), "Unable to get address.", Toast.LENGTH_LONG).show();
+        }
+        Address address = null;
+        if (fromLocation != null & fromLocation.size() > 0) {
+            address = fromLocation.get(0);
+        }
+        return address;
     }
 
     @Nullable
-    private String getAreaName(LatLng latLng) {
-        Geocoder geocoder = new Geocoder(this.getActivity(), Locale.getDefault());
+    private String getDisplayName(Address address) {
         String area = null;
-        try {
-            List<Address> fromLocation = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
-            if (fromLocation != null & fromLocation.size() > 0) {
-                Address address = fromLocation.get(0);
-                String streetName = address.getThoroughfare();
-                String subLocality = address.getSubLocality();
-                if (streetName == null) {
-                    area = subLocality;
-                } else {
-                    area = streetName + ", " + subLocality;
-                }
-                Log.i(TAG, "street name:=" + streetName + " Sublocality=" + subLocality);
-            }
-        } catch (IOException e) {
-            Toast.makeText(this.getActivity(), "Unable to get street name for" + latLng, Toast.LENGTH_LONG).show();
+        String streetName = address.getThoroughfare();
+        String subLocality = address.getSubLocality();
+        if (streetName == null) {
+            area = subLocality;
+        } else {
+            area = streetName + ", " + subLocality;
         }
+        Log.i(TAG, "street name:=" + streetName + " Sublocality=" + subLocality);
         return area;
     }
 }

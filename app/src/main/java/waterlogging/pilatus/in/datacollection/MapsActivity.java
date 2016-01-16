@@ -97,16 +97,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        /*
-        Setting central station as default location
-         */
-        LatLng currentLocation = new LatLng(13.0823353,80.2732586);
+        LatLng currentLocation ;
         if (mLastLocation != null) {
             double longitude = mLastLocation.getLongitude();
             double latitude = mLastLocation.getLatitude();
             currentLocation = new LatLng(latitude,longitude);
-        }
-        if (currentLocation!=null){
             Toast.makeText(this, "Tap a street to record water logging info",Toast.LENGTH_LONG).show();
             Log.i(TAG,"Max zoom level is: "+ mMap.getMaxZoomLevel());
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(currentLocation, mMap.getMaxZoomLevel() - 3);

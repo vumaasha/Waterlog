@@ -1,5 +1,6 @@
 package waterlogging.pilatus.in.datacollection;
 
+import android.location.Address;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -32,6 +33,13 @@ public class PostWaterLoggingInfo extends AsyncTask<WaterLoggingInfo,Integer,Int
             nameValuePair.add(new BasicNameValuePair("lat", log.getLatitude().toString() ));
             nameValuePair.add(new BasicNameValuePair("long", log.getLongitude().toString() ));
             nameValuePair.add(new BasicNameValuePair("level", log.getLevel().getLevel().toString()));
+            Address address = log.getAddress();
+            if (address != null){
+                nameValuePair.add(new BasicNameValuePair("area", address.getLocality()));
+                nameValuePair.add(new BasicNameValuePair("sublocality", address.getSubLocality()));
+                nameValuePair.add(new BasicNameValuePair("throughfare", address.getThoroughfare()));
+                nameValuePair.add(new BasicNameValuePair("postcode", address.getPostalCode()));
+            }
 
             try {
                 httpPost.setEntity(new UrlEncodedFormEntity(nameValuePair));
@@ -41,9 +49,11 @@ public class PostWaterLoggingInfo extends AsyncTask<WaterLoggingInfo,Integer,Int
                 e.printStackTrace();
             }
             try {
+                Log.d("Http Post ", httpPost.getURI().toASCIIString());
                 HttpResponse response = httpClient.execute(httpPost);
                 // write response to log
                 Log.d("Http Post Response:", response.toString());
+                Log.d("Http Post Response:", response.getStatusLine().toString());
             } catch (ClientProtocolException e) {
                 // Log exception
                 e.printStackTrace();

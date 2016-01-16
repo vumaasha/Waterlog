@@ -1,5 +1,6 @@
 package waterlogging.pilatus.in.datacollection;
 
+import android.location.Address;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -26,13 +27,20 @@ public class WaterLoggingInfo {
     private Double latitude;
     private Double longitude;
     private WaterLoggingFragment.WaterLoggingLevel level;
+    private Address address;
 
-    public WaterLoggingInfo(String androidID, Double latitude, Double longitude, WaterLoggingFragment.WaterLoggingLevel level) {
-        this.androidID = androidID;
+    public WaterLoggingInfo(String android_id, Double latitude, Double longitude, WaterLoggingFragment.WaterLoggingLevel level) {
+        this.androidID = android_id;
         this.latitude = latitude;
         this.longitude = longitude;
         this.level = level;
+
     }
+    public WaterLoggingInfo(String androidID, Double latitude, Double longitude, WaterLoggingFragment.WaterLoggingLevel level,Address address) {
+        this(androidID,latitude,longitude,level);
+        this.address = address;
+    }
+
 
     public String getAndroidID() {
         return androidID;
@@ -50,4 +58,7 @@ public class WaterLoggingInfo {
         return longitude;
     }
 
+    public Address getAddress() {
+        return address;
+    }
 }
